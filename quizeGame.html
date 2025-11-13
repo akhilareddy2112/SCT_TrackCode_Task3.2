@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Game</title>
+    <style>
+        .quiz-container {
+            width: 80%;
+            margin: 50px auto;
+            text-align: center;
+        }
+
+        .question {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .option {
+            margin-bottom: 10px;
+        }
+
+        .result {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="question" id="question"></div>
+        <div class="options" id="options"></div>
+        <button id="submit">Submit</button>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                question: "What is the capital of France?",
+                options: ["Paris", "London", "Berlin", "Rome"],
+                answer: "Paris",
+                type: "single"
+            },
+            {
+                question: "Which of the following planets are gas giants?",
+                options: ["Earth", "Mars", "Jupiter", "Saturn"],
+                answer: ["Jupiter", "Saturn"],
+                type: "multi"
+            },
+            {
+                question: "The capital of Japan is _______________.",
+                answer: "Tokyo",
+                type: "fill"
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let userAnswers = [];
+
+        const questionElement = document.getElementById('question');
+        const optionsElement = document.getElementById('options');
+        const submitButton = document.getElementById('submit');
+        const resultElement = document.getElementById('result');
+
+        submitButton.addEventListener('click', checkAnswer);
+
+        displayQuestion();
+
+        function displayQuestion() {
+            const currentQuizData = quizData[currentQuestion];
+            questionElement.textContent = currentQuizData.question;
+
+            if (currentQuizData.type === "single" || currentQuizData.type === "multi") {
+                optionsElement.innerHTML = '';
+                currentQuizData.options.forEach((option, index) => {
+                    const optionElement = document.createElement('div');
+                    optionElement.classList.add('option');
+                    const inputElement = document.createElement('input');
+                    inputElement.type = currentQuizData.type === "single" ? "radio" : "checkbox";
+                    inputElement.name = "option";
+                    inputElement.value = option;
+                    inputElement.id = `option-${index}`;
+                    const labelElement = document.createElement('label');
+                    labelElement.htmlFor = `option-${index}`;
+                    labelElement.textContent = option;
+                    optionElement.appendChild(inputElement);
+                    optionElement.appendChild(labelElement);
+                    optionsElement.appendChild(optionElement);
+                });
+            } else if (currentQuizData.type === "fill") {
+                optionsElement.innerHTML = '';
+                const inputElement = document.createElement('input');
+                inputElement.type = "text";
+                inputElement.id = "fill-answer";
+                optionsElement.appendChild(inputElement);
+            }
+        }
+
+        function checkAnswer() {
+            const currentQuizData = quizData[currentQuestion];
+            let userAnswer;
+
+            if (currentQuizData.type === "single") {
+                const selectedOption = document.querySelector('input[name="option"]:checked');
+                userAnswer = selectedOption.value;
+            } else if (currentQuizData.type === "multi") {
+                const selectedOptions = document.querySelectorAll('input[name="option"]:checked');
+                userAnswer = Array.from(selectedOptions).map(option => option.value);
+            } else if (currentQuizData.type === "fill") {
+                userAnswer = document.getElementById('fill-answer').value;
+            }
+
+            userAnswers.push(userAnswer);
+
+            if (currentQuizData.type === "single" || currentQuizData.type === "fill") {
+                if (userAnswer === currentQuizData.answer) {
+                    score++;
+                }
+            } else if (currentQuizData.type === "multi") {
+                if (JSON.stringify(userAnswer) === JSON.stringify(currentQuizData.answer)) {
+                    score++;
+                }
+            }
+
+            currentQuestion++;
+
+            if (currentQuestion < quizData.length) {
+                displayQuestion();
+            } else {
+                displayResult();
+            }
+        }
+
+        function displayResult() {
+            questionElement.textContent = '';
+            optionsElement.innerHTML = '';
+            submitButton.style.display = 'none';
+            resultElement.textContent = `Your score is ${score} out of ${quizData.length}`;
+        }
+    </script>
+</body>
+</html>
